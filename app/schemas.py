@@ -67,6 +67,7 @@ class TaskResponse(BaseModel):
     description: str | None
     status: str
     due_date: datetime | None
+    weather_info: str | None = None
     created_at: datetime
     updated_at: datetime
 

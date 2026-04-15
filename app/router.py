@@ -13,11 +13,12 @@ from app.exceptions import TaskNotFoundException
 from app.models import Task, TaskStatus
 from app.notifications import send_notification
 from app.schemas import TaskCreate, TaskResponse, TaskUpdate
+from app.weather import fetch_weather
 
 router = APIRouter(prefix="/tasks", tags=["tasks"], dependencies=[Depends(verify_api_key)])
 
 
-def _serialize_task(task: Task) -> dict:
+def _serialize_task(task: Task, weather_info: str | None = None) -> dict:
     """将 ORM 对象序列化为可缓存的字典。"""
     return {
         "id": task.id,
@@ -25,14 +26,15 @@ def _serialize_task(task: Task) -> dict:
         "description": task.description,
         "status": task.status.value,
         "due_date": task.due_date.isoformat() if task.due_date else None,
+        "weather_info": weather_info,
         "created_at": task.created_at.isoformat() if task.created_at else None,
         "updated_at": task.updated_at.isoformat() if task.updated_at else None,
     }
 
 
 @router.post("", response_model=TaskResponse, status_code=201)
-async def create_task(task_in: TaskCreate, db: AsyncSession = Depends(get_db)) -> Task:
-    """创建新任务。"""
+async def create_task(task_in: TaskCreate, db: AsyncSession = Depends(get_db)) -> dict:
+    """创建新任务，并尝试获取 due_date 当天的天气预报。"""
     task = Task(
         title=task_in.title,
         description=task_in.description,
@@ -42,8 +44,11 @@ async def create_task(task_in: TaskCreate, db: AsyncSession = Depends(get_db)) -
     db.add(task)
     await db.commit()
     await db.refresh(task)
-    store_in_cache(task.id, _serialize_task(task))
-    return task
+
+    weather_info = await fetch_weather(task.due_date)
+    cache_data = _serialize_task(task, weather_info)
+    store_in_cache(task.id, cache_data)
+    return cache_data
 
 
 @router.get("", response_model=list[TaskResponse])
@@ -63,9 +68,9 @@ async def list_tasks(
 
 
 @router.get("/{task_id}", response_model=TaskResponse)
-async def get_task(task_id: str, db: AsyncSession = Depends(get_db)) -> Task:
-    """通过 ID 获取指定任务（带缓存）。"""
-    # 先查缓存
+async def get_task(task_id: str, db: AsyncSession = Depends(get_db)) -> dict:
+    """通过 ID 获取指定任务（带缓存），包含天气信息。"""
+    # 先查缓存（缓存中可能包含天气数据）
     cached = lookup(task_id)
     if cached is not None:
         return cached
@@ -74,8 +79,12 @@ async def get_task(task_id: str, db: AsyncSession = Depends(get_db)) -> Task:
     task = await db.get(Task, task_id)
     if task is None:
         raise TaskNotFoundException(task_id)
-    store_in_cache(task.id, _serialize_task(task))
-    return task
+
+    # 获取天气信息
+    weather_info = await fetch_weather(task.due_date)
+    cache_data = _serialize_task(task, weather_info)
+    store_in_cache(task.id, cache_data)
+    return cache_data
 
 
 @router.put("/{task_id}", response_model=TaskResponse)
@@ -104,8 +113,9 @@ async def update_task(
     await db.commit()
     await db.refresh(task)
 
-    # 更新缓存
-    store_in_cache(task.id, _serialize_task(task))
+    # 更新缓存（重新获取天气）
+    weather_info = await fetch_weather(task.due_date)
+    store_in_cache(task.id, _serialize_task(task, weather_info))
 
     # 当任务被标记为已完成时触发通知
     if task.status == TaskStatus.COMPLETED and old_status != TaskStatus.COMPLETED:

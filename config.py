@@ -28,6 +28,8 @@ _ENV_OVERRIDES = {
     "SERVER_HOST": ("server", "host"),
     "SERVER_PORT": ("server", "port"),
     "LOG_LEVEL": ("logging", "level"),
+    "WEATHER_API_KEY": ("weather", "api_key"),
+    "WEATHER_LOCATION": ("weather", "location"),
 }
 
 

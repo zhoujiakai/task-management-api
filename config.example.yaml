@@ -14,5 +14,12 @@ notifications:
   smtp_port: 587
   sender: "noreply@example.com"
 
+weather:
+  enabled: true
+  api_key: ""
+  base_url: "https://api.openweathermap.org/data/2.5/forecast"
+  location: "Beijing"
+  timeout: 10
+
 logging:
   level: "INFO"
