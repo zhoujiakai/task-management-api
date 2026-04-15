@@ -1,0 +1,18 @@
+server:
+  host: "0.0.0.0"
+  port: 8000
+
+database:
+  url: "sqlite+aiosqlite:///./tasks.db"
+
+auth:
+  api_key: "your-secret-api-key-here"
+
+notifications:
+  enabled: true
+  smtp_host: "smtp.example.com"
+  smtp_port: 587
+  sender: "noreply@example.com"
+
+logging:
+  level: "INFO"
