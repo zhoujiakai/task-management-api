@@ -1,4 +1,4 @@
-"""Colorama-based colored logging module."""
+"""基于 Colorama 的彩色日志模块。"""
 
 import logging
 import sys
@@ -9,7 +9,7 @@ init(autoreset=True)
 
 
 class ColoredFormatter(logging.Formatter):
-    """Log formatter that adds colors based on log level."""
+    """根据日志级别添加颜色的日志格式化器。"""
 
     COLORS = {
         logging.DEBUG: Fore.CYAN,
@@ -27,7 +27,7 @@ class ColoredFormatter(logging.Formatter):
 
 
 def create_logger(name: str = "app", level: str = "INFO") -> logging.Logger:
-    """Create a logger with colored output."""
+    """创建带有彩色输出的日志器。"""
     logger = logging.getLogger(name)
     logger.setLevel(getattr(logging, level.upper(), logging.INFO))
 

@@ -1,4 +1,4 @@
-"""Pytest fixtures for the test suite."""
+"""测试套件的 Pytest 固件。"""
 
 from collections.abc import AsyncGenerator
 
@@ -21,7 +21,7 @@ TestSessionLocal = async_sessionmaker(
 
 @pytest.fixture(autouse=True)
 async def setup_database() -> AsyncGenerator[None, None]:
-    """Create tables before each test and drop them after."""
+    """在每个测试前创建表，测试后删除表。"""
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield
@@ -39,7 +39,7 @@ app.dependency_overrides[get_db] = override_get_db
 
 @pytest.fixture
 async def client() -> AsyncGenerator[AsyncClient, None]:
-    """Provide an async HTTP test client."""
+    """提供异步 HTTP 测试客户端。"""
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
@@ -47,13 +47,13 @@ async def client() -> AsyncGenerator[AsyncClient, None]:
 
 @pytest.fixture
 def api_headers() -> dict[str, str]:
-    """Provide valid API key headers."""
+    """提供有效的 API 密钥请求头。"""
     return {"X-API-Key": TEST_API_KEY}
 
 
 @pytest.fixture
 async def sample_task(client: AsyncClient, api_headers: dict[str, str]) -> dict:
-    """Create a sample task and return its data."""
+    """创建示例任务并返回其数据。"""
     from datetime import datetime, timedelta, timezone
 
     due = datetime.now(timezone.utc) + timedelta(days=7)

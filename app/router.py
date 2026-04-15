@@ -1,4 +1,4 @@
-"""CRUD router for the Task Management API."""
+"""任务管理 API 的 CRUD 路由。"""
 
 from typing import Optional
 
@@ -18,7 +18,7 @@ router = APIRouter(prefix="/tasks", tags=["tasks"], dependencies=[Depends(verify
 
 @router.post("", response_model=TaskResponse, status_code=201)
 async def create_task(task_in: TaskCreate, db: AsyncSession = Depends(get_db)) -> Task:
-    """Create a new task."""
+    """创建新任务。"""
     task = Task(
         title=task_in.title,
         description=task_in.description,
@@ -36,7 +36,7 @@ async def list_tasks(
     status: Optional[str] = Query(None, description="Filter by task status"),
     db: AsyncSession = Depends(get_db),
 ) -> list[Task]:
-    """List all tasks, optionally filtered by status."""
+    """列出所有任务，可按状态筛选。"""
     stmt = select(Task)
     if status is not None:
         stmt = stmt.where(Task.status == TaskStatus(status))
@@ -47,7 +47,7 @@ async def list_tasks(
 
 @router.get("/{task_id}", response_model=TaskResponse)
 async def get_task(task_id: str, db: AsyncSession = Depends(get_db)) -> Task:
-    """Get a specific task by ID."""
+    """通过 ID 获取指定任务。"""
     task = await db.get(Task, task_id)
     if task is None:
         raise TaskNotFoundException(task_id)
@@ -58,7 +58,7 @@ async def get_task(task_id: str, db: AsyncSession = Depends(get_db)) -> Task:
 async def update_task(
     task_id: str, task_in: TaskUpdate, db: AsyncSession = Depends(get_db)
 ) -> Task:
-    """Update an existing task."""
+    """更新已有任务。"""
     task = await db.get(Task, task_id)
     if task is None:
         raise TaskNotFoundException(task_id)
@@ -80,7 +80,7 @@ async def update_task(
     await db.commit()
     await db.refresh(task)
 
-    # Trigger notification when task is marked as completed
+    # 当任务被标记为已完成时触发通知
     if task.status == TaskStatus.COMPLETED and old_status != TaskStatus.COMPLETED:
         await send_notification(task.id, task.title, task.status.value)
 
@@ -89,7 +89,7 @@ async def update_task(
 
 @router.delete("/{task_id}", status_code=204)
 async def delete_task(task_id: str, db: AsyncSession = Depends(get_db)) -> None:
-    """Delete a task."""
+    """删除任务。"""
     task = await db.get(Task, task_id)
     if task is None:
         raise TaskNotFoundException(task_id)

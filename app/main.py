@@ -1,4 +1,4 @@
-"""FastAPI application entry point."""
+"""FastAPI 应用入口。"""
 
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
@@ -16,7 +16,7 @@ log = create_logger("app", cfg.logging.level)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    """Application lifespan: create tables on startup."""
+    """应用生命周期：启动时创建数据库表。"""
     log.info("Starting Task Management API")
     await create_tables()
     yield

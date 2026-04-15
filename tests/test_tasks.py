@@ -1,4 +1,4 @@
-"""CRUD tests for the Task Management API."""
+"""任务管理 API 的 CRUD 测试。"""
 
 from datetime import datetime, timedelta, timezone
 
@@ -79,7 +79,7 @@ async def test_delete_task(
     )
     assert response.status_code == 204
 
-    # Verify deleted
+    # 验证已删除
     response = await client.get(f"/tasks/{sample_task['id']}", headers=api_headers)
     assert response.status_code == 404
 

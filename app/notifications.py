@@ -1,4 +1,4 @@
-"""Async notification module (simulated email)."""
+"""异步通知模块（模拟邮件）。"""
 
 import asyncio
 
@@ -8,11 +8,11 @@ log = create_logger("notifications")
 
 
 async def send_notification(task_id: str, title: str, status: str) -> None:
-    """Simulate sending an email notification asynchronously.
+    """异步模拟发送邮件通知。
 
-    In production, this would connect to an SMTP server or message queue.
+    在生产环境中，此处应连接 SMTP 服务器或消息队列。
     """
     log.info(f"Sending notification: task '{title}' ({task_id}) changed to '{status}'")
-    # Simulate network latency
+    # 模拟网络延迟
     await asyncio.sleep(0.01)
     log.info(f"Notification sent for task {task_id}")

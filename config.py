@@ -1,4 +1,4 @@
-"""YAML configuration management module."""
+"""YAML 配置管理模块。"""
 
 from pathlib import Path
 from typing import Any
@@ -7,7 +7,7 @@ import yaml
 
 
 class _Section:
-    """Nested configuration section with attribute access."""
+    """支持属性访问的嵌套配置节。"""
 
     def __init__(self, data: dict[str, Any] | None = None) -> None:
         for key, value in (data or {}).items():
@@ -18,7 +18,7 @@ class _Section:
 
 
 class Config:
-    """Application configuration loaded from YAML."""
+    """从 YAML 加载的应用配置。"""
 
     def __init__(self, config_path: str = "config.yaml") -> None:
         path = Path(config_path)

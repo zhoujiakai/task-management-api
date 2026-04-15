@@ -1,25 +1,25 @@
-"""Custom exceptions and error handlers for the Task Management API."""
+"""任务管理 API 的自定义异常和错误处理器。"""
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 
 class TaskNotFoundException(Exception):
-    """Raised when a task is not found by ID."""
+    """通过 ID 未找到任务时抛出。"""
 
     def __init__(self, task_id: str) -> None:
         self.task_id = task_id
 
 
 class ValidationException(Exception):
-    """Raised when custom validation fails."""
+    """自定义验证失败时抛出。"""
 
     def __init__(self, detail: str) -> None:
         self.detail = detail
 
 
 def register_exception_handlers(app: FastAPI) -> None:
-    """Register custom exception handlers on the FastAPI app."""
+    """在 FastAPI 应用上注册自定义异常处理器。"""
 
     @app.exception_handler(TaskNotFoundException)
     async def task_not_found_handler(

@@ -1,4 +1,4 @@
-"""Exception response format tests for the Task Management API."""
+"""任务管理 API 的异常响应格式测试。"""
 
 import pytest
 from httpx import AsyncClient

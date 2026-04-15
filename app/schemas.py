@@ -1,4 +1,4 @@
-"""Pydantic request/response schemas for the Task Management API."""
+"""任务管理 API 的 Pydantic 请求/响应模式。"""
 
 from datetime import datetime
 
@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, field_validator
 
 
 class TaskCreate(BaseModel):
-    """Schema for creating a new task."""
+    """创建新任务的请求模式。"""
 
     title: str = Field(..., min_length=1, max_length=200)
     description: str | None = None
@@ -32,7 +32,7 @@ class TaskCreate(BaseModel):
 
 
 class TaskUpdate(BaseModel):
-    """Schema for updating an existing task."""
+    """更新已有任务的请求模式。"""
 
     title: str | None = Field(None, min_length=1, max_length=200)
     description: str | None = None
@@ -60,7 +60,7 @@ class TaskUpdate(BaseModel):
 
 
 class TaskResponse(BaseModel):
-    """Schema for task response data."""
+    """任务响应数据的模式。"""
 
     id: str
     title: str

@@ -1,4 +1,4 @@
-"""SQLAlchemy ORM models for the Task Management API."""
+"""任务管理 API 的 SQLAlchemy ORM 模型。"""
 
 import enum
 import uuid
@@ -13,7 +13,7 @@ class Base(DeclarativeBase):
 
 
 class TaskStatus(str, enum.Enum):
-    """Possible statuses for a task."""
+    """任务的可能状态。"""
 
     PENDING = "pending"
     IN_PROGRESS = "in_progress"
@@ -21,7 +21,7 @@ class TaskStatus(str, enum.Enum):
 
 
 class Task(Base):
-    """Task database model."""
+    """任务数据库模型。"""
 
     __tablename__ = "tasks"
 
