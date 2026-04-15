@@ -4,7 +4,7 @@
 请求失败时优雅降级返回 None。
 """
 
-from datetime import datetime, timezone
+from datetime import datetime
 from functools import lru_cache
 from typing import Any
 

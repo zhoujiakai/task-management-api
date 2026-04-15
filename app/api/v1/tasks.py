@@ -6,8 +6,8 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.security import verify_api_key
 from app.core.exceptions import TaskNotFoundException
+from app.core.security import verify_api_key
 from app.db.session import get_db
 from app.models.task import Task, TaskStatus
 from app.schemas.task import TaskCreate, TaskResponse, TaskUpdate

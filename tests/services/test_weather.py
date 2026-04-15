@@ -123,7 +123,11 @@ async def test_fetch_weather_no_matching_date() -> None:
     """预报中无匹配日期时返回 None（超出 3 天预报范围）。"""
     far_future = datetime.now(timezone.utc) + timedelta(days=10)
 
-    mock_response_data = {"weather": [{"date": "2020-01-01", "maxtempC": "10", "mintempC": "5", "hourly": []}]}
+    mock_response_data = {
+        "weather": [
+            {"date": "2020-01-01", "maxtempC": "10", "mintempC": "5", "hourly": []}
+        ]
+    }
 
     mock_resp = Mock()
     mock_resp.json.return_value = mock_response_data
