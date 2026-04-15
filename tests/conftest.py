@@ -6,9 +6,9 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from app.database import get_db
+from app.db.session import get_db
 from app.main import app
-from app.models import Base
+from app.models.task import Base
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 TEST_API_KEY = "test-api-key-123"

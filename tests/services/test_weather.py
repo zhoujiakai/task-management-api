@@ -6,13 +6,13 @@ from unittest.mock import AsyncMock, Mock, patch
 import pytest
 from httpx import AsyncClient
 
-from app.weather import fetch_weather
+from app.services.weather import fetch_weather
 
 
 @pytest.fixture(autouse=True)
 def clear_weather_cache() -> None:
     """每个测试前后清空天气缓存。"""
-    import app.weather as weather_mod
+    import app.services.weather as weather_mod
 
     weather_mod._weather_cache.clear()
     weather_mod._weather_versions.clear()
@@ -46,7 +46,7 @@ async def test_fetch_weather_returns_none_when_no_due_date() -> None:
 async def test_fetch_weather_returns_none_when_disabled() -> None:
     """天气功能禁用时返回 None。"""
     future_date = datetime.now(timezone.utc) + timedelta(days=1)
-    with patch("app.weather.cfg") as mock_cfg:
+    with patch("app.services.weather.cfg") as mock_cfg:
         mock_cfg.weather = _make_weather_cfg(enabled=False)
         result = await fetch_weather(future_date)
     assert result is None
@@ -86,8 +86,8 @@ async def test_fetch_weather_success() -> None:
     mock_client.__aexit__ = AsyncMock(return_value=False)
 
     with (
-        patch("app.weather.cfg") as mock_cfg,
-        patch("app.weather.httpx.AsyncClient", return_value=mock_client),
+        patch("app.services.weather.cfg") as mock_cfg,
+        patch("app.services.weather.httpx.AsyncClient", return_value=mock_client),
     ):
         mock_cfg.weather = _make_weather_cfg()
         result = await fetch_weather(future_date)
@@ -109,8 +109,8 @@ async def test_fetch_weather_handles_api_failure() -> None:
     mock_client.__aexit__ = AsyncMock(return_value=False)
 
     with (
-        patch("app.weather.cfg") as mock_cfg,
-        patch("app.weather.httpx.AsyncClient", return_value=mock_client),
+        patch("app.services.weather.cfg") as mock_cfg,
+        patch("app.services.weather.httpx.AsyncClient", return_value=mock_client),
     ):
         mock_cfg.weather = _make_weather_cfg()
         result = await fetch_weather(future_date)
@@ -135,8 +135,8 @@ async def test_fetch_weather_no_matching_date() -> None:
     mock_client.__aexit__ = AsyncMock(return_value=False)
 
     with (
-        patch("app.weather.cfg") as mock_cfg,
-        patch("app.weather.httpx.AsyncClient", return_value=mock_client),
+        patch("app.services.weather.cfg") as mock_cfg,
+        patch("app.services.weather.httpx.AsyncClient", return_value=mock_client),
     ):
         mock_cfg.weather = _make_weather_cfg()
         result = await fetch_weather(far_future)

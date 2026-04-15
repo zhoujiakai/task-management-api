@@ -1,6 +1,6 @@
 """缓存功能测试。"""
 
-from app.cache import (
+from app.services.cache import (
     _cache,
     _versions,
     clear_all,

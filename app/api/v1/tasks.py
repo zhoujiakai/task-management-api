@@ -6,14 +6,14 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth import verify_api_key
-from app.cache import invalidate_cache, lookup, store_in_cache
-from app.database import get_db
-from app.exceptions import TaskNotFoundException
-from app.models import Task, TaskStatus
-from app.notifications import send_notification
-from app.schemas import TaskCreate, TaskResponse, TaskUpdate
-from app.weather import fetch_weather
+from app.core.security import verify_api_key
+from app.core.exceptions import TaskNotFoundException
+from app.db.session import get_db
+from app.models.task import Task, TaskStatus
+from app.schemas.task import TaskCreate, TaskResponse, TaskUpdate
+from app.services.cache import invalidate_cache, lookup, store_in_cache
+from app.services.notification import send_notification
+from app.services.weather import fetch_weather
 
 router = APIRouter(prefix="/tasks", tags=["tasks"], dependencies=[Depends(verify_api_key)])
 

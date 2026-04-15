@@ -10,8 +10,8 @@ from typing import Any
 
 import httpx
 
-from config import cfg
-from logger import create_logger
+from app.core.config import cfg
+from app.core.logger import create_logger
 
 log = create_logger("weather", cfg.logging.level)
 

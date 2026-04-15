@@ -5,11 +5,11 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.database import create_tables
-from app.exceptions import register_exception_handlers
-from app.router import router
-from config import cfg
-from logger import create_logger
+from app.api.v1.router import router
+from app.core.config import cfg
+from app.core.exceptions import register_exception_handlers
+from app.core.logger import create_logger
+from app.db.session import create_tables
 
 log = create_logger("app", cfg.logging.level)
 

@@ -23,7 +23,7 @@ class TaskCreate(BaseModel):
     @field_validator("status")
     @classmethod
     def status_must_be_valid(cls, v: str) -> str:
-        from app.models import TaskStatus
+        from app.models.task import TaskStatus
 
         allowed = [s.value for s in TaskStatus]
         if v not in allowed:
@@ -51,7 +51,7 @@ class TaskUpdate(BaseModel):
     def status_must_be_valid(cls, v: str | None) -> str | None:
         if v is None:
             return v
-        from app.models import TaskStatus
+        from app.models.task import TaskStatus
 
         allowed = [s.value for s in TaskStatus]
         if v not in allowed:
