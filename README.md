@@ -33,6 +33,8 @@ uv run uvicorn app.main:app --reload
 
 ### 创建任务
 
+![创建任务](assets/创建任务.png)
+
 ```bash
 curl -X POST http://localhost:8000/tasks \
   -H "Content-Type: application/json" \
@@ -70,6 +72,8 @@ curl -X POST http://localhost:8000/tasks \
 
 ### 查看任务是否完成
 
+![查看任务是否完成](assets/查看任务是否完成.png)
+
 查询指定任务，返回的 `status` 字段即为任务状态：
 
 ```bash
@@ -88,6 +92,8 @@ curl "http://localhost:8000/tasks?status=completed" \
 
 ### 将任务标记为完成
 
+![将任务标记为完成](assets/将任务标记为完成.png)
+
 ```bash
 curl -X PUT http://localhost:8000/tasks/{task_id} \
   -H "Content-Type: application/json" \
@@ -98,6 +104,8 @@ curl -X PUT http://localhost:8000/tasks/{task_id} \
 任务被标记为 `completed` 时，系统会自动触发通知（根据 `config.yaml` 中 notifications 配置）。
 
 ## 测试
+
+![测试结果](assets/测试结果.png)
 
 ```bash
 # 安装开发依赖（pytest、pytest-cov、ruff 等）
