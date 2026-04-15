@@ -137,25 +137,25 @@
 
 ### 6.6 加分项：集成外部 API（天气信息）
 - **状态**: ✅ 已实现
-- **位置**: `app/weather.py` — 异步天气客户端，集成 OpenWeatherMap 免费 5 天预报 API。
-- **功能**: 创建/获取/更新任务时，自动获取 `due_date` 当天的天气预报（如 "晴，22.5°C"），通过 `weather_info` 字段返回。
+- **位置**: `app/weather.py` — 异步天气客户端，集成 wttr.in 免费 API（无需注册、无需 API Key）。
+- **功能**: 创建/获取/更新任务时，自动获取 `due_date` 当天的天气预报（如 "Sunny，26°C（15~28°C）"），通过 `weather_info` 字段返回。
 - **设计**:
-  - API Key、URL、超时等全部配置化，集中在 `config.yaml` 的 `weather` 节。
-  - 也支持通过环境变量 `WEATHER_API_KEY`、`WEATHER_LOCATION` 覆盖。
-  - 未配置 API Key 或请求失败时优雅降级，`weather_info` 返回 `null`。
+  - 使用 wttr.in（`?format=j1`）获取 3 天天气预报，完全免费无需认证。
+  - URL、城市、超时等全部配置化，集中在 `config.yaml` 的 `weather` 节。
+  - 支持通过环境变量 `WEATHER_LOCATION` 覆盖城市配置。
+  - 请求失败时优雅降级，`weather_info` 返回 `null`，不影响核心功能。
   - 天气结果按"日期+城市"缓存（使用 `lru_cache`），避免重复请求。
   - 日志使用项目统一的 `create_logger("weather", cfg.logging.level)` 方式。
 - **配置项**（`config.yaml`）:
   ```yaml
   weather:
     enabled: true
-    api_key: ""
-    base_url: "https://api.openweathermap.org/data/2.5/forecast"
+    base_url: "https://wttr.in"
     location: "Beijing"
     timeout: 10
   ```
 - **测试**: `tests/test_weather.py` — 8 个测试用例，覆盖成功/失败/无匹配日期/禁用等场景。
-- **端到端验证**: ⚠️ 待验证 — 当前 API Key 返回 401，需替换为有效 Key 后验证。
+- **端到端验证**: ✅ 已通过 — curl 和 HTTP 接口均返回真实天气数据。
 
 ---
 
