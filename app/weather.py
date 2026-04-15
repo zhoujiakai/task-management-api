@@ -1,10 +1,10 @@
 """外部天气 API 集成模块。
 
-使用 OpenWeatherMap 免费 API 获取任务 due_date 当天的天气预报。
-当 API Key 未配置或请求失败时，优雅降级返回 None。
+使用 wttr.in 免费 API（无需 API Key）获取任务 due_date 当天的天气预报。
+请求失败时优雅降级返回 None。
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import lru_cache
 from typing import Any
 
@@ -34,8 +34,8 @@ def _weather_cache_key(date: datetime, location: str) -> str:
 async def fetch_weather(due_date: datetime | None) -> str | None:
     """获取 due_date 当天的天气描述。
 
-    调用 OpenWeatherMap 5 天预报 API，找到目标日期的预报数据，
-    返回人类可读的天气描述（如 "多云，15.2°C"）。
+    调用 wttr.in 免费 API，从 3 天预报中找到目标日期，
+    返回人类可读的天气描述（如 "Sunny，25°C（12~25°C）"）。
 
     Args:
         due_date: 任务截止日期，为 None 时返回 None。
@@ -51,13 +51,12 @@ async def fetch_weather(due_date: datetime | None) -> str | None:
 
     weather_cfg = cfg.weather
     enabled = getattr(weather_cfg, "enabled", False)
-    api_key = getattr(weather_cfg, "api_key", "")
     location = getattr(weather_cfg, "location", "Beijing")
-    base_url = getattr(weather_cfg, "base_url", "https://api.openweathermap.org/data/2.5/forecast")
-    timeout = getattr(weather_cfg, "timeout", 10)
+    base_url = getattr(weather_cfg, "base_url", "https://wttr.in")
+    timeout = int(getattr(weather_cfg, "timeout", 10))
 
-    if not enabled or not api_key:
-        log.debug("天气功能未启用或未配置 API Key，跳过天气获取")
+    if not enabled:
+        log.debug("天气功能未启用，跳过天气获取")
         return None
 
     # 检查缓存
@@ -67,16 +66,12 @@ async def fetch_weather(due_date: datetime | None) -> str | None:
     if cached is not None:
         return cached.get("description")
 
-    # 调用 OpenWeatherMap API
+    # 调用 wttr.in API
     try:
         async with httpx.AsyncClient(timeout=timeout) as client:
-            params = {
-                "q": location,
-                "appid": api_key,
-                "units": "metric",
-                "cnt": 40,
-            }
-            response = await client.get(base_url, params=params)
+            url = f"{base_url}/{location}"
+            params = {"format": "j1"}
+            response = await client.get(url, params=params)
             response.raise_for_status()
             data = response.json()
     except httpx.HTTPError as e:
@@ -86,27 +81,24 @@ async def fetch_weather(due_date: datetime | None) -> str | None:
         log.warning("获取天气数据时发生异常: %s", e)
         return None
 
-    # 从预报列表中找到目标日期的条目
+    # 从 weather 列表中找到目标日期
     target_date = due_date.strftime("%Y-%m-%d")
-    matching_items = [
-        item
-        for item in data.get("list", [])
-        if item.get("dt_txt", "").startswith(target_date)
-    ]
+    weather_list = data.get("weather", [])
+    matching = [d for d in weather_list if d.get("date") == target_date]
 
-    if not matching_items:
-        log.info("未找到 %s 的天气预报数据（可能超出 5 天预报范围）", target_date)
+    if not matching:
+        log.info("未找到 %s 的天气预报数据（超出 3 天预报范围）", target_date)
         return None
 
-    # 取目标日期中午 12:00 附近的预报（或第一个可用的）
-    best = min(
-        matching_items,
-        key=lambda item: abs(int(item.get("dt_txt", "").split(" ")[1][:2]) - 12),
-    )
-
-    temp = best["main"]["temp"]
-    description = best["weather"][0]["description"] if best.get("weather") else "未知"
-    weather_desc = f"{description}，{temp:.1f}°C"
+    day = matching[0]
+    max_temp = day["maxtempC"]
+    min_temp = day["mintempC"]
+    # 取中午时段（index=4，即12:00）的天气描述
+    hourly = day.get("hourly", [])
+    midday = hourly[4] if len(hourly) > 4 else hourly[0] if hourly else {}
+    desc = midday.get("weatherDesc", [{}])[0].get("value", "未知")
+    midday_temp = midday.get("tempC", max_temp)
+    weather_desc = f"{desc}，{midday_temp}°C（{min_temp}~{max_temp}°C）"
 
     # 缓存结果
     _weather_cache[cache_key] = {"description": weather_desc}

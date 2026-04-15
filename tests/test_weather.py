@@ -23,6 +23,18 @@ def clear_weather_cache() -> None:
     weather_mod._get_cached_weather.cache_clear()
 
 
+def _make_weather_cfg(**overrides) -> object:
+    """构造模拟的 weather 配置对象。"""
+    defaults = {
+        "enabled": True,
+        "location": "Beijing",
+        "base_url": "https://wttr.in",
+        "timeout": 10,
+    }
+    defaults.update(overrides)
+    return type("W", (), defaults)()
+
+
 @pytest.mark.asyncio
 async def test_fetch_weather_returns_none_when_no_due_date() -> None:
     """无 due_date 时返回 None。"""
@@ -33,27 +45,33 @@ async def test_fetch_weather_returns_none_when_no_due_date() -> None:
 @pytest.mark.asyncio
 async def test_fetch_weather_returns_none_when_disabled() -> None:
     """天气功能禁用时返回 None。"""
-    future_date = datetime.now(timezone.utc) + timedelta(days=3)
-    # config 中 weather.enabled=true 但 api_key 为空
+    future_date = datetime.now(timezone.utc) + timedelta(days=1)
     with patch("app.weather.cfg") as mock_cfg:
-        mock_weather = type("W", (), {"enabled": True, "api_key": "", "location": "Beijing"})()
-        mock_cfg.weather = mock_weather
+        mock_cfg.weather = _make_weather_cfg(enabled=False)
         result = await fetch_weather(future_date)
     assert result is None
 
 
 @pytest.mark.asyncio
 async def test_fetch_weather_success() -> None:
-    """天气 API 返回成功时，解析并缓存天气描述。"""
-    future_date = datetime.now(timezone.utc) + timedelta(days=3)
+    """wttr.in 返回成功时，解析天气描述并缓存。"""
+    future_date = datetime.now(timezone.utc) + timedelta(days=1)
     target_date_str = future_date.strftime("%Y-%m-%d")
 
+    # 模拟 wttr.in 的响应格式
     mock_response_data = {
-        "list": [
+        "weather": [
             {
-                "dt_txt": f"{target_date_str} 12:00:00",
-                "main": {"temp": 22.5},
-                "weather": [{"description": "晴"}],
+                "date": target_date_str,
+                "maxtempC": "28",
+                "mintempC": "15",
+                "hourly": [
+                    {"time": "0", "tempC": "15", "weatherDesc": [{"value": "Clear"}]},
+                    {"time": "300", "tempC": "16", "weatherDesc": [{"value": "Clear"}]},
+                    {"time": "600", "tempC": "18", "weatherDesc": [{"value": "Sunny"}]},
+                    {"time": "900", "tempC": "22", "weatherDesc": [{"value": "Sunny"}]},
+                    {"time": "1200", "tempC": "26", "weatherDesc": [{"value": "Sunny"}]},
+                ],
             },
         ]
     }
@@ -71,20 +89,19 @@ async def test_fetch_weather_success() -> None:
         patch("app.weather.cfg") as mock_cfg,
         patch("app.weather.httpx.AsyncClient", return_value=mock_client),
     ):
-        mock_weather = type("W", (), {"enabled": True, "api_key": "test-key", "location": "Beijing"})()
-        mock_cfg.weather = mock_weather
-
+        mock_cfg.weather = _make_weather_cfg()
         result = await fetch_weather(future_date)
 
     assert result is not None
-    assert "晴" in result
-    assert "22.5°C" in result
+    assert "Sunny" in result
+    assert "26°C" in result
+    assert "15~28°C" in result
 
 
 @pytest.mark.asyncio
 async def test_fetch_weather_handles_api_failure() -> None:
     """天气 API 失败时优雅降级，返回 None。"""
-    future_date = datetime.now(timezone.utc) + timedelta(days=3)
+    future_date = datetime.now(timezone.utc) + timedelta(days=1)
 
     mock_client = AsyncMock()
     mock_client.get = AsyncMock(side_effect=Exception("Connection error"))
@@ -95,9 +112,7 @@ async def test_fetch_weather_handles_api_failure() -> None:
         patch("app.weather.cfg") as mock_cfg,
         patch("app.weather.httpx.AsyncClient", return_value=mock_client),
     ):
-        mock_weather = type("W", (), {"enabled": True, "api_key": "test-key", "location": "Beijing"})()
-        mock_cfg.weather = mock_weather
-
+        mock_cfg.weather = _make_weather_cfg()
         result = await fetch_weather(future_date)
 
     assert result is None
@@ -105,10 +120,10 @@ async def test_fetch_weather_handles_api_failure() -> None:
 
 @pytest.mark.asyncio
 async def test_fetch_weather_no_matching_date() -> None:
-    """预报数据中无匹配日期时返回 None（如超过 5 天预报范围）。"""
+    """预报中无匹配日期时返回 None（超出 3 天预报范围）。"""
     far_future = datetime.now(timezone.utc) + timedelta(days=10)
 
-    mock_response_data = {"list": []}
+    mock_response_data = {"weather": [{"date": "2020-01-01", "maxtempC": "10", "mintempC": "5", "hourly": []}]}
 
     mock_resp = Mock()
     mock_resp.json.return_value = mock_response_data
@@ -123,9 +138,7 @@ async def test_fetch_weather_no_matching_date() -> None:
         patch("app.weather.cfg") as mock_cfg,
         patch("app.weather.httpx.AsyncClient", return_value=mock_client),
     ):
-        mock_weather = type("W", (), {"enabled": True, "api_key": "test-key", "location": "Beijing"})()
-        mock_cfg.weather = mock_weather
-
+        mock_cfg.weather = _make_weather_cfg()
         result = await fetch_weather(far_future)
 
     assert result is None
@@ -135,8 +148,8 @@ async def test_fetch_weather_no_matching_date() -> None:
 async def test_task_create_with_weather_info(
     client: AsyncClient, api_headers: dict[str, str]
 ) -> None:
-    """创建任务时，响应中包含 weather_info 字段（可能为 None）。"""
-    due = datetime.now(timezone.utc) + timedelta(days=7)
+    """创建任务时，响应中包含 weather_info 字段。"""
+    due = datetime.now(timezone.utc) + timedelta(days=1)
     response = await client.post(
         "/tasks",
         json={
@@ -149,8 +162,6 @@ async def test_task_create_with_weather_info(
     assert response.status_code == 201
     data = response.json()
     assert "weather_info" in data
-    # 当前未配置真实 API Key，weather_info 应为 None
-    assert data["weather_info"] is None
 
 
 @pytest.mark.asyncio
@@ -170,7 +181,7 @@ async def test_task_get_with_weather_info(
 async def test_task_list_includes_weather_field(
     client: AsyncClient, api_headers: dict[str, str], sample_task: dict
 ) -> None:
-    """任务列表中每项也包含 weather_info 字段（list 直接返回 ORM，字段为 None）。"""
+    """任务列表中每项也包含 weather_info 字段。"""
     response = await client.get("/tasks", headers=api_headers)
     assert response.status_code == 200
     data = response.json()
