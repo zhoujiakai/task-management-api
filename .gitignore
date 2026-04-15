@@ -13,6 +13,9 @@ venv/
 # Config with secrets
 config.yaml
 
+# Environment variables
+.env
+
 # Database
 *.db
 

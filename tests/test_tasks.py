@@ -111,3 +111,42 @@ async def test_health_check(client: AsyncClient) -> None:
 async def test_unauthorized_access(client: AsyncClient) -> None:
     response = await client.get("/tasks")
     assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_pagination_limit(
+    client: AsyncClient, api_headers: dict[str, str]
+) -> None:
+    """测试分页：limit 参数限制返回数量。"""
+    due = datetime.now(timezone.utc) + timedelta(days=7)
+    # 创建 3 个任务
+    for i in range(3):
+        await client.post(
+            "/tasks",
+            json={"title": f"Task {i}", "due_date": due.isoformat()},
+            headers=api_headers,
+        )
+
+    # limit=2 只应返回 2 个
+    response = await client.get("/tasks?limit=2", headers=api_headers)
+    assert response.status_code == 200
+    assert len(response.json()) == 2
+
+
+@pytest.mark.asyncio
+async def test_pagination_offset(
+    client: AsyncClient, api_headers: dict[str, str]
+) -> None:
+    """测试分页：offset 参数跳过前 N 条。"""
+    due = datetime.now(timezone.utc) + timedelta(days=7)
+    for i in range(3):
+        await client.post(
+            "/tasks",
+            json={"title": f"Task {i}", "due_date": due.isoformat()},
+            headers=api_headers,
+        )
+
+    # 总共 3 个，offset=2 应返回 1 个
+    response = await client.get("/tasks?offset=2", headers=api_headers)
+    assert response.status_code == 200
+    assert len(response.json()) == 1

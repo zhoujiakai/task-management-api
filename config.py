@@ -1,9 +1,13 @@
-"""YAML 配置管理模块。"""
+"""YAML + 环境变量 配置管理模块。"""
 
+import os
 from pathlib import Path
 from typing import Any
 
 import yaml
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class _Section:
@@ -17,8 +21,18 @@ class _Section:
         return repr(self.__dict__)
 
 
+# 环境变量到配置键的映射（支持嵌套键，用下划线分隔层级）
+_ENV_OVERRIDES = {
+    "DATABASE_URL": ("database", "url"),
+    "API_KEY": ("auth", "api_key"),
+    "SERVER_HOST": ("server", "host"),
+    "SERVER_PORT": ("server", "port"),
+    "LOG_LEVEL": ("logging", "level"),
+}
+
+
 class Config:
-    """从 YAML 加载的应用配置。"""
+    """从 YAML 加载应用配置，环境变量可覆盖。"""
 
     def __init__(self, config_path: str = "config.yaml") -> None:
         path = Path(config_path)
@@ -26,7 +40,15 @@ class Config:
             raise FileNotFoundError(f"Config file not found: {config_path}")
 
         with open(path) as f:
-            data = yaml.safe_load(f) or {}
+            data: dict[str, Any] = yaml.safe_load(f) or {}
+
+        # 应用环境变量覆盖
+        for env_key, (section, field) in _ENV_OVERRIDES.items():
+            env_value = os.environ.get(env_key)
+            if env_value is not None:
+                if section not in data:
+                    data[section] = {}
+                data[section][field] = env_value
 
         for key, value in data.items():
             setattr(self, key, _Section(value) if isinstance(value, dict) else value)
