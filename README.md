@@ -6,7 +6,7 @@
 
 ```bash
 # 安装依赖
-uv sync
+cd backend && uv sync
 
 # 复制并编辑配置文件
 cp app/config.example.yaml app/config.yaml
@@ -33,47 +33,49 @@ uv run uvicorn app.main:app --reload
 
 ```
 task-management-api/
-├── app/
-│   ├── __init__.py
-│   ├── main.py                     # FastAPI 应用入口
-│   ├── api/                        # API 层（路由）
-│   │   └── v1/                     # API 版本化
-│   │       ├── router.py           # v1 路由聚合
-│   │       └── tasks.py            # 任务 CRUD 端点
-│   ├── core/                       # 核心基础设施
-│   │   ├── config.py               # 配置管理（YAML + 环境变量）
-│   │   ├── logger.py               # 彩色日志模块
-│   │   ├── security.py             # API Key 认证
-│   │   └── exceptions.py           # 自定义异常 & 处理器
-│   ├── db/                         # 数据库
-│   │   └── session.py              # SQLAlchemy 引擎 & 会话管理
-│   ├── models/                     # ORM 模型
-│   │   ├── __init__.py             # 统一导出
-│   │   └── task.py                 # Task 模型
-│   ├── schemas/                    # Pydantic 请求/响应模式
-│   │   ├── __init__.py             # 统一导出
-│   │   └── task.py                 # Task schemas
-│   ├── config.yaml                 # 应用配置（不入库）
-│   ├── config.example.yaml         # 配置模板
-│   ├── .env.example                # 环境变量模板
-│   ├── tasks.db                    # SQLite 数据库
-│   └── services/                   # 业务逻辑层
-│       ├── cache.py                # 任务缓存服务
-│       ├── weather.py              # 天气 API 集成
-│       └── notification.py         # 通知服务
-├── tests/
-│   ├── conftest.py                 # 共享 fixtures
-│   ├── api/                        # API 集成测试
-│   │   ├── test_tasks.py
-│   │   ├── test_validation.py
-│   │   ├── test_notifications.py
-│   │   └── test_exceptions.py
-│   └── services/                   # 服务单元测试
-│       ├── test_cache.py
-│       └── test_weather.py
-├── pyproject.toml                  # 项目元数据 & 依赖
-├── docs/                           # 文档
-└── assets/                         # README 截图
+├── backend/
+│   ├── app/
+│   │   ├── __init__.py
+│   │   ├── main.py                     # FastAPI 应用入口
+│   │   ├── api/                        # API 层（路由）
+│   │   │   └── v1/                     # API 版本化
+│   │   │       ├── router.py           # v1 路由聚合
+│   │   │       └── tasks.py            # 任务 CRUD 端点
+│   │   ├── core/                       # 核心基础设施
+│   │   │   ├── config.py               # 配置管理（YAML + 环境变量）
+│   │   │   ├── logger.py               # 彩色日志模块
+│   │   │   ├── security.py             # API Key 认证
+│   │   │   └── exceptions.py           # 自定义异常 & 处理器
+│   │   ├── db/                         # 数据库
+│   │   │   └── session.py              # SQLAlchemy 引擎 & 会话管理
+│   │   ├── models/                     # ORM 模型
+│   │   │   ├── __init__.py             # 统一导出
+│   │   │   └── task.py                 # Task 模型
+│   │   ├── schemas/                    # Pydantic 请求/响应模式
+│   │   │   ├── __init__.py             # 统一导出
+│   │   │   └── task.py                 # Task schemas
+│   │   ├── config.yaml                 # 应用配置（不入库）
+│   │   ├── config.example.yaml         # 配置模板
+│   │   ├── .env.example                # 环境变量模板
+│   │   ├── tasks.db                    # SQLite 数据库
+│   │   └── services/                   # 业务逻辑层
+│   │       ├── cache.py                # 任务缓存服务
+│   │       ├── weather.py              # 天气 API 集成
+│   │       └── notification.py         # 通知服务
+│   ├── tests/
+│   │   ├── conftest.py                 # 共享 fixtures
+│   │   ├── api/                        # API 集成测试
+│   │   │   ├── test_tasks.py
+│   │   │   ├── test_validation.py
+│   │   │   ├── test_notifications.py
+│   │   │   └── test_exceptions.py
+│   │   └── services/                   # 服务单元测试
+│   │       ├── test_cache.py
+│   │       └── test_weather.py
+│   ├── pyproject.toml                  # 项目元数据 & 依赖
+│   └── uv.lock                         # 依赖锁定文件
+├── docs/                               # 文档
+└── assets/                             # README 截图
 ```
 
 ## 使用示例
@@ -155,6 +157,8 @@ curl -X PUT http://localhost:8000/tasks/{task_id} \
 ![测试结果](assets/测试结果.png)
 
 ```bash
+cd backend
+
 # 安装开发依赖（pytest、pytest-cov、ruff 等）
 uv sync --extra dev
 
