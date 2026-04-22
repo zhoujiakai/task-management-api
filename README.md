@@ -32,7 +32,7 @@ uv run uvicorn app.main:app --reload
 ## 项目结构
 
 ```
-task-management-api/
+opentask/
 ├── backend/
 │   ├── app/
 │   │   ├── __init__.py

@@ -39,7 +39,7 @@
 ## 三、目录结构与职责
 
 ```
-task-management-api/
+opentask/
 └── backend/                        # 后端代码目录
     ├── pyproject.toml              # 项目元数据、依赖、工具配置（唯一配置入口）
     ├── .python-version             # Python 版本锁定（3.12）
@@ -1012,7 +1012,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "task-management-api"
+name = "opentask"
 version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
@@ -1080,7 +1080,7 @@ cd backend && uv sync --all-extras
 
 ```bash
 # 1. 进入项目目录
-cd task-management-api
+cd opentask
 
 # 2. 进入后端目录
 cd backend

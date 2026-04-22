@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "task-management-api"
+name = "opentask"
 version = "0.1.0"
 description = "A task management RESTful API built with FastAPI"
 requires-python = ">=3.12"
