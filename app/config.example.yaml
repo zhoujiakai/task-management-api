@@ -3,7 +3,7 @@ server:
   port: 8000
 
 database:
-  url: "sqlite+aiosqlite:///./tasks.db"
+  url: "sqlite+aiosqlite:///./app/tasks.db"
 
 auth:
   api_key: "your-secret-api-key-here"

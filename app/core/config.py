@@ -35,7 +35,7 @@ _ENV_OVERRIDES = {
 class Config:
     """从 YAML 加载应用配置，环境变量可覆盖。"""
 
-    def __init__(self, config_path: str = "config.yaml") -> None:
+    def __init__(self, config_path: str = "app/config.yaml") -> None:
         path = Path(config_path)
         if not path.exists():
             raise FileNotFoundError(f"Config file not found: {config_path}")

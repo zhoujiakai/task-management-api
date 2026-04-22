@@ -11,7 +11,7 @@ build/
 venv/
 
 # Config with secrets
-config.yaml
+app/config.yaml
 
 # Environment variables
 .env

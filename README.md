@@ -9,7 +9,7 @@
 uv sync
 
 # 复制并编辑配置文件
-cp config.example.yaml config.yaml
+cp app/config.example.yaml app/config.yaml
 
 # 启动服务
 uv run uvicorn app.main:app --reload
@@ -53,6 +53,10 @@ task-management-api/
 │   ├── schemas/                    # Pydantic 请求/响应模式
 │   │   ├── __init__.py             # 统一导出
 │   │   └── task.py                 # Task schemas
+│   ├── config.yaml                 # 应用配置（不入库）
+│   ├── config.example.yaml         # 配置模板
+│   ├── .env.example                # 环境变量模板
+│   ├── tasks.db                    # SQLite 数据库
 │   └── services/                   # 业务逻辑层
 │       ├── cache.py                # 任务缓存服务
 │       ├── weather.py              # 天气 API 集成
@@ -67,9 +71,6 @@ task-management-api/
 │   └── services/                   # 服务单元测试
 │       ├── test_cache.py
 │       └── test_weather.py
-├── config.yaml                     # 应用配置（不入库）
-├── config.example.yaml             # 配置模板
-├── .env.example                    # 环境变量模板
 ├── pyproject.toml                  # 项目元数据 & 依赖
 ├── docs/                           # 文档
 └── assets/                         # README 截图
@@ -147,7 +148,7 @@ curl -X PUT http://localhost:8000/tasks/{task_id} \
   -d '{"status": "completed"}'
 ```
 
-任务被标记为 `completed` 时，系统会自动触发通知（根据 `config.yaml` 中 notifications 配置）。
+任务被标记为 `completed` 时，系统会自动触发通知（根据 `app/config.yaml` 中 notifications 配置）。
 
 ## 测试
 
@@ -166,7 +167,7 @@ uv run ruff check .
 
 ## 配置说明
 
-将 `config.example.yaml` 复制为 `config.yaml`，按需调整以下配置项：
+将 `app/config.example.yaml` 复制为 `app/config.yaml`，按需调整以下配置项：
 
 - `server` — 服务主机地址和端口
 - `database` — SQLAlchemy 异步数据库连接 URL

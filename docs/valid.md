@@ -12,7 +12,7 @@
 
 ### 1.3 数据库：SQLite
 - **状态**: ✅ 已实现
-- **位置**: `app/database.py` — 使用 `sqlite+aiosqlite` 异步驱动，配置在 `config.yaml` 中。
+- **位置**: `app/database.py` — 使用 `sqlite+aiosqlite` 异步驱动，配置在 `app/config.yaml` 中。
 
 ### 1.4 SQLAlchemy ORM 定义 Task 模型
 - **状态**: ✅ 已实现（有差异）
@@ -114,7 +114,7 @@
 ### 6.1 使用环境变量管理配置（通过 dotenv）
 - **状态**: ✅ 已实现
 - **位置**: `config.py` — 加载 `.env` 文件，支持通过环境变量覆盖 YAML 配置项（`DATABASE_URL`、`API_KEY`、`SERVER_HOST`、`SERVER_PORT`、`LOG_LEVEL`）。
-- **说明**: 新增 `.env.example` 模板文件，`python-dotenv` 已添加为依赖。
+- **说明**: 新增 `app/.env.example` 模板文件，`python-dotenv` 已添加为依赖。
 
 ### 6.2 使用 logging 模块实现日志记录
 - **状态**: ✅ 已实现
@@ -141,12 +141,12 @@
 - **功能**: 创建/获取/更新任务时，自动获取 `due_date` 当天的天气预报（如 "Sunny，26°C（15~28°C）"），通过 `weather_info` 字段返回。
 - **设计**:
   - 使用 wttr.in（`?format=j1`）获取 3 天天气预报，完全免费无需认证。
-  - URL、城市、超时等全部配置化，集中在 `config.yaml` 的 `weather` 节。
+  - URL、城市、超时等全部配置化，集中在 `app/config.yaml` 的 `weather` 节。
   - 支持通过环境变量 `WEATHER_LOCATION` 覆盖城市配置。
   - 请求失败时优雅降级，`weather_info` 返回 `null`，不影响核心功能。
   - 天气结果按"日期+城市"缓存（使用 `lru_cache`），避免重复请求。
   - 日志使用项目统一的 `create_logger("weather", cfg.logging.level)` 方式。
-- **配置项**（`config.yaml`）:
+- **配置项**（`app/config.yaml`）:
   ```yaml
   weather:
     enabled: true
